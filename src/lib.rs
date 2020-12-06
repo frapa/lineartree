@@ -52,7 +52,7 @@ struct Node<T> {
 #[derive(Debug, Clone)]
 pub struct Tree<T> {
     nodes: Vec<Option<Node<T>>>,
-    root: Option<Node<T>>,
+    root: Option<NodeRef>,
     len: usize,
 }
 
@@ -63,6 +63,17 @@ impl<T> Tree<T> {
             root: None,
             len: 0,
         }
+    }
+
+    pub fn root(&mut self, content: T) -> Result<NodeRef> {
+        if self.root.is_some() {
+            return Err(TreeError::new("Another root node already exists."));
+        }
+
+        let node_ref = self.node(content);
+        self.root = Some(node_ref);
+
+        Ok(node_ref)
     }
 
     pub fn node(&mut self, content: T) -> NodeRef {
