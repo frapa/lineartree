@@ -1,0 +1,10 @@
+[package]
+name = "lineartree"
+description = "A simple tree data structure for rust"
+homepage = "https://github.com/frapa/lineartree"
+repository = "https://github.com/frapa/lineartree"
+readme = "README.md"
+license = "MIT"
+version = "0.1.0"
+authors = ["Francesco Pasa <francescopasa@gmail.com>"]
+edition = "2018"
