@@ -158,3 +158,31 @@ fn clone_tree() {
     assert_eq!(tree.get(node).unwrap().field, 3);
     assert_eq!(clone.get(node).unwrap().field, 100);
 }
+
+#[test]
+fn root2() {
+    let (mut tree, _) = nested_tree();
+
+    assert_eq!(
+        tree.root(TestData { field: 10 }),
+        Err(TreeError::new("Another root node already exists."))
+    );
+}
+
+#[test]
+fn depth_first_iterator() {
+    let (tree, _) = nested_tree();
+
+    let next = |iterator: &mut dyn Iterator<Item = NodeRef>| {
+        iterator.next().and_then(|node_ref| tree.get(node_ref))
+    };
+
+    let mut iterator = tree.depth_first().unwrap();
+    assert_eq!(next(&mut iterator), Some(&TestData { field: 1 }));
+    assert_eq!(next(&mut iterator), Some(&TestData { field: 2 }));
+    assert_eq!(next(&mut iterator), Some(&TestData { field: 4 }));
+    assert_eq!(next(&mut iterator), Some(&TestData { field: 3 }));
+    assert_eq!(next(&mut iterator), Some(&TestData { field: 5 }));
+    assert_eq!(next(&mut iterator), Some(&TestData { field: 6 }));
+    assert_eq!(next(&mut iterator), None);
+}

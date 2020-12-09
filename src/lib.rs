@@ -175,6 +175,80 @@ impl<T> Tree<T> {
             Some(child_node) => child_node.parent,
         }
     }
+
+    pub fn depth_first_of(&self, node_ref: NodeRef) -> Result<DepthFirstIterator<T>> {
+        DepthFirstIterator::new(&self, node_ref)
+    }
+
+    pub fn depth_first(&self) -> Result<DepthFirstIterator<T>> {
+        match self.root {
+            None => Err(TreeError::new("Cannot iterate ")),
+            Some(root_ref) => self.depth_first_of(root_ref),
+        }
+    }
+}
+
+// Iterators
+// ==================================================================
+pub struct DepthFirstIterator<'a, T> {
+    tree: &'a Tree<T>,
+    current: NodeRef,
+    child_iterator: Box<dyn Iterator<Item = &'a NodeRef> + 'a>,
+    current_iterator: Option<Box<dyn Iterator<Item = NodeRef> + 'a>>,
+    finished: bool,
+}
+
+impl<'a, T> DepthFirstIterator<'a, T> {
+    fn new(tree: &'a Tree<T>, current: NodeRef) -> Result<Self> {
+        Ok(Self {
+            tree,
+            current,
+            child_iterator: Box::new(tree.get_children(current)?),
+            current_iterator: None,
+            finished: false,
+        })
+    }
+
+    fn next_child(&mut self) -> bool {
+        match self.child_iterator.next() {
+            None => {
+                self.finished = true;
+                false
+            }
+            Some(next_child) => {
+                let child_iterator = self.tree.depth_first_of(*next_child).unwrap();
+                self.current_iterator = Some(Box::new(child_iterator));
+                true
+            }
+        }
+    }
+}
+
+impl<'a, T> Iterator for DepthFirstIterator<'a, T> {
+    type Item = NodeRef;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.finished {
+            return None;
+        }
+
+        match &mut self.current_iterator {
+            None => {
+                self.next_child();
+                Some(self.current)
+            }
+            Some(iterator) => match iterator.next() {
+                None => {
+                    if self.next_child() {
+                        self.next()
+                    } else {
+                        None
+                    }
+                }
+                Some(value) => Some(value),
+            },
+        }
+    }
 }
 
 // Tests
