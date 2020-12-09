@@ -1,0 +1,4 @@
+anguage: rust
+rust:
+  - stable
+cache: cargo
