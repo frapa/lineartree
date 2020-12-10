@@ -2,6 +2,8 @@ anguage: rust
 rust:
   - stable
 cache: cargo
+before_script:
+  - cargo install cargo-tarpaulin
 script:
  - cargo build --verbose
- - cargo test --verbose
+ - cargo tarpaulin --verbose --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
