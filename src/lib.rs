@@ -1,3 +1,67 @@
+//! A simple and easy-to-use tree data structure for rust.
+//!
+//! This crate implements trees using a single vector to hold all nodes, hence the name.
+//! Basically it's a `Vec<Node<T>>`, where each `Node<T>` has indices of parents and children.
+//!
+//! On top of that, there's some convenience functions to iterate depth-first and breadth-first
+//! across nodes, find children, and so on.
+//!
+//! ## Basic usage
+//!
+//! ```rust
+//! use lineartree::{Tree, NodeRef};
+//!
+//! fn main() {
+//!     let mut tree = Tree::new();
+//!
+//!     /* This builds the following tree
+//!      *               /
+//!      *               |
+//!      *   etc --------+---------usr
+//!      *                          |
+//!      *                  bin ----+----- lib
+//!      */
+//!     let fs_root = tree.root("/");
+//!
+//!     // Using .root() or .node() return a NodeRef object
+//!     // which can be later used to identify and manipulate
+//!     // node values.
+//!     let usr = tree.node("usr");
+//!     tree.append_child(fs_root, usr);
+//!
+//!     let bin = tree.node("bin");
+//!     let lib = tree.node("lib");
+//!     tree.append_children(usr, &[bin, lib]);
+//!
+//!     let etc = tree.node("etc");
+//!     tree.append_child(fs_root, etc);
+//!
+//!     // Get node values (this is O(1))
+//!     assert_eq!(tree.get(lib), Some(&"lib"));
+//!     assert_eq!(tree.get(lib), Some(&"lib"));
+//!     assert_eq!(tree.get_mut(lib), Some(&mut "lib"));
+//!
+//!     // Remove node, this won't resize the underlying Vec
+//!     // because otherwise node references will be invalidated.
+//!     tree.remove(etc);
+//!
+//!     // .len() is also O(1)
+//!     assert_eq!(tree.len(), 4);
+//!
+//!     // Here are the basic hierarchical operators
+//!     assert_eq!(tree.get_parent(usr), Some(fs_root));
+//!     assert_eq!(
+//!         tree.get_children(usr).unwrap().collect::<Vec<NodeRef>>(),
+//!         vec![bin, lib],
+//!     );
+//!
+//!     // Iterate depth first over a node children.
+//!     // Use .depth_first() to iterate the entire tree.
+//!     for node in tree.depth_first_of(usr) {
+//!         // ...
+//!     }
+//! }
+//! ```
 use std::error::Error;
 use std::fmt;
 use std::slice::Iter;
@@ -56,7 +120,14 @@ pub struct Tree<T> {
     len: usize,
 }
 
+/// Represent a tree structure.
+///
+/// This structure is the core of the library and will own all data
+/// in the tree. All functions for creating, manipulating and removing nodes,
+/// as well as add children, and perform various types of iteration
+/// are methods of this struct.
 impl<T> Tree<T> {
+    /// Create new empty tree structure.
     pub fn new() -> Self {
         Self {
             nodes: Vec::new(),
@@ -65,6 +136,15 @@ impl<T> Tree<T> {
         }
     }
 
+    /// Create a root node.
+    ///
+    /// There can be only one root node in a tree, and calling this function
+    /// twice will result in an error. Trees without root nodes are valid,
+    /// but you won't be able to use some functionality like iteration
+    /// over all nodes in a tree.
+    ///
+    /// # Arguments
+    /// * `content` - The item to be set as content of the root node.
     pub fn root(&mut self, content: T) -> Result<NodeRef> {
         if self.root.is_some() {
             return Err(TreeError::new("Another root node already exists."));
@@ -76,6 +156,12 @@ impl<T> Tree<T> {
         Ok(node_ref)
     }
 
+    /// Create a node.
+    ///
+    ///
+    ///
+    /// # Arguments
+    /// * `content` - The item to be set as content of the node.
     pub fn node(&mut self, content: T) -> NodeRef {
         let id = self.nodes.len();
 
@@ -190,6 +276,7 @@ impl<T> Tree<T> {
 
 // Iterators
 // ==================================================================
+#[doc(hidden)]
 pub struct DepthFirstIterator<'a, T> {
     tree: &'a Tree<T>,
     current: NodeRef,
