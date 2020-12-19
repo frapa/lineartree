@@ -15,7 +15,7 @@ Basically it's a `Vec<Node<T>>`, where each `Node<T>` has indices of parents and
 On top of that, there's some convenience functions to iterate depth-first and breadth-first
 across nodes, find children, and so on.
 
-## Basic usage
+## Quick Start
 
 ### Tree creation
 
