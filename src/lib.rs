@@ -12,7 +12,7 @@
 //!
 //! ```rust
 //! use lineartree::{Tree, NodeRef};
-//! 
+//!
 //! /* This builds the following tree
 //!  *        "/"
 //!  *       /   \
@@ -22,10 +22,10 @@
 //!  */
 //!  
 //! let mut tree = Tree::new();
-//! 
+//!
 //! // Trees usually have a root node
 //! let fs_root = tree.root("/");
-//! 
+//!
 //! // Using .root() or .node() return a NodeRef object
 //! // which can be later used to identify and manipulate
 //! // node values.
@@ -70,7 +70,7 @@
 //!     tree.get_children(usr).unwrap().collect::<Vec<NodeRef>>(),
 //!     vec![bin, lib],
 //! );
-//! 
+//!
 //! // Iterate depth first over a node children.
 //! // Use .depth_first() to iterate the entire tree.
 //! for node in tree.depth_first_of(usr) {
@@ -144,7 +144,7 @@ pub struct Tree<T> {
 /// are methods of this struct.
 impl<T> Tree<T> {
     /// Create new empty tree structure.
-    /// 
+    ///
     /// *Returns:* [Tree] struct.
     pub fn new() -> Self {
         Self {
@@ -195,13 +195,12 @@ impl<T> Tree<T> {
         NodeRef { id }
     }
 
-
     /// Remove a node from the tree.
     ///
     /// The removed node will not reduce the amount of memory used by the
     /// tree, nor resize the underying vector so that other node
     /// references won't be invalidated.
-    /// 
+    ///
     /// *Arguments:*
     /// * `node_ref` - [NodeRef] object indicating which node to remove.
     ///
@@ -221,7 +220,7 @@ impl<T> Tree<T> {
     }
 
     /// Get the number of nodes in the tree.
-    /// 
+    ///
     /// This is not the same as the space used by the vector
     /// implementation if some nodes where removed.
     pub fn len(&self) -> usize {
@@ -234,20 +233,20 @@ impl<T> Tree<T> {
             Some(node) => node.as_ref(),
         }
     }
-    
+
     fn get_node_mut(&mut self, node_ref: NodeRef) -> Option<&mut Node<T>> {
         match self.nodes.get_mut(node_ref.id) {
             None => None,
             Some(node) => node.as_mut(),
         }
     }
-    
+
     /// Get immutable reference to the node content.
-    /// 
+    ///
     /// *Arguments:*
     /// * `node_ref` - [NodeRef] object indicating which node
     ///   content to retrieve.
-    /// 
+    ///
     /// *Returns:* Reference to the object contained in the node
     ///            or `None` if the `node_ref` is invalid.
     pub fn get(&self, node_ref: NodeRef) -> Option<&T> {
@@ -258,11 +257,11 @@ impl<T> Tree<T> {
     }
 
     /// Get mutable reference to the node content.
-    /// 
+    ///
     /// *Arguments:*
     /// * `node_ref` - [NodeRef] object indicating which node
     ///   content to retrieve.
-    /// 
+    ///
     /// *Returns:* Mutable reference to the object contained in the node
     ///            or `None` if the `node_ref` is invalid.
     pub fn get_mut(&mut self, node_ref: NodeRef) -> Option<&mut T> {
@@ -273,11 +272,11 @@ impl<T> Tree<T> {
     }
 
     /// Add child node to a node.
-    /// 
+    ///
     /// *Arguments:*
     /// * `parent_ref` - [NodeRef] of the parent node.
     /// * `child_ref` - [NodeRef] of the child node.
-    /// 
+    ///
     /// *Returns:* Result indicating whether the operations was successful.
     ///            Returns an error if one of the node references is invalid.
     pub fn append_child(&mut self, parent_ref: NodeRef, child_ref: NodeRef) -> Result<()> {
@@ -299,11 +298,11 @@ impl<T> Tree<T> {
     }
 
     /// Add children nodes to a node.
-    /// 
+    ///
     /// *Arguments:*
     /// * `parent_ref` - [NodeRef] of of the parent node.
     /// * `children_refs` - Slice of [NodeRef] for the child nodes.
-    /// 
+    ///
     /// *Returns:* Result indicating whether the operations was successful.
     ///            Returns an error if one of the node references is invalid.
     pub fn append_children(
@@ -318,10 +317,10 @@ impl<T> Tree<T> {
     }
 
     /// Get iterator returning references to a node's children.
-    /// 
+    ///
     /// *Arguments:*
     /// * `parent_ref` - [NodeRef] of the parent node.
-    /// 
+    ///
     /// *Returns:* Iterator returning node references to the children.
     ///            Returns error if the parent reference is invalid.
     pub fn get_children(&self, parent_ref: NodeRef) -> Result<Iter<NodeRef>> {
@@ -332,10 +331,10 @@ impl<T> Tree<T> {
     }
 
     /// Get reference to the parent node.
-    /// 
+    ///
     /// *Arguments:*
     /// * `child_ref` - [NodeRef] of the child node.
-    /// 
+    ///
     /// *Returns:* A reference to the parent node or `None` if no
     ///            parent exists. Returns error if the parent does not exist.
     pub fn get_parent(&self, child_ref: NodeRef) -> Result<Option<NodeRef>> {
@@ -347,33 +346,37 @@ impl<T> Tree<T> {
 
     /// Get an iterator traversing the node and all child nodes in
     /// depth-first order.
-    /// 
+    ///
     /// *Arguments:*
     /// * `node_ref` - [NodeRef] of the starting node.
-    /// * `include_start` - If true, iteration starts with the 
-    ///                     starting node instead of with the first 
+    /// * `include_start` - If true, iteration starts with the
+    ///                     starting node instead of with the first
     ///                     thereof.
-    /// 
-    /// *Returns:* An iterator returning the node references to the 
+    ///
+    /// *Returns:* An iterator returning the node references to the
     ///            child nodes in depth-first order. Returns error
     ///            if the start node does not exist.
-    pub fn depth_first_of(&self, node_ref: NodeRef, include_start: bool) -> Result<DepthFirstIterator<T>> {
+    pub fn depth_first_of(
+        &self,
+        node_ref: NodeRef,
+        include_start: bool,
+    ) -> Result<DepthFirstIterator<T>> {
         let mut iterator = DepthFirstIterator::new(&self, node_ref)?;
-        if include_start {
+        if !include_start {
             iterator.next();
         }
         Ok(iterator)
     }
 
-    /// Get an iterator traversing all nodes in the tree in a 
+    /// Get an iterator traversing all nodes in the tree in a
     /// depth-first order.
-    /// 
+    ///
     /// *Arguments:*
-    /// * `include_root` - If true, iteration starts with the 
-    ///                    root node instead of with the first 
+    /// * `include_root` - If true, iteration starts with the
+    ///                    root node instead of with the first
     ///                    thereof.
-    /// 
-    /// *Returns:* An iterator returning the node references to the 
+    ///
+    /// *Returns:* An iterator returning the node references to the
     ///            nodes in depth-first order. Returns error
     ///            if no root node exist.
     pub fn depth_first(&self, include_root: bool) -> Result<DepthFirstIterator<T>> {

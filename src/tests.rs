@@ -177,7 +177,7 @@ fn depth_first_iterator() {
         iterator.next().and_then(|node_ref| tree.get(node_ref))
     };
 
-    let mut iterator = tree.depth_first().unwrap();
+    let mut iterator = tree.depth_first(true).unwrap();
     assert_eq!(next(&mut iterator), Some(&TestData { field: 1 }));
     assert_eq!(next(&mut iterator), Some(&TestData { field: 2 }));
     assert_eq!(next(&mut iterator), Some(&TestData { field: 4 }));
