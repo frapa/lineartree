@@ -103,11 +103,16 @@ fn append_child() {
 
     tree.append_child(node_a, node_b).unwrap();
     tree.append_child(node_a, node_c).unwrap();
+    let node_d = tree.child_node(node_b, "Node D").unwrap();
 
-    let mut children = tree.get_children(node_a).unwrap();
-    assert_eq!(*children.next().unwrap(), node_b);
-    assert_eq!(*children.next().unwrap(), node_c);
-    assert_eq!(children.next(), None);
+    let mut children_a = tree.get_children(node_a).unwrap();
+    assert_eq!(*children_a.next().unwrap(), node_b);
+    assert_eq!(*children_a.next().unwrap(), node_c);
+    assert_eq!(children_a.next(), None);
+
+    let mut children_b = tree.get_children(node_b).unwrap();
+    assert_eq!(*children_b.next().unwrap(), node_d);
+    assert_eq!(children_b.next(), None);
 }
 
 #[test]
@@ -128,8 +133,8 @@ fn get_parent() {
 
     tree.append_children(node_a, &[node_b, node_c]).unwrap();
 
-    assert_eq!(tree.get_parent(node_c), Some(node_a));
-    assert_eq!(tree.get_parent(node_a), None);
+    assert_eq!(tree.get_parent(node_c).unwrap(), Some(node_a));
+    assert_eq!(tree.get_parent(node_a).unwrap(), None);
 }
 
 #[test]

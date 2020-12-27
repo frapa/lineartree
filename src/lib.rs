@@ -10,7 +10,7 @@
 //!
 //! ### Tree creation
 //!
-//! ```rust
+//! ```ignore
 //! use lineartree::{Tree, NodeRef};
 //!
 //! /* This builds the following tree
@@ -24,26 +24,26 @@
 //! let mut tree = Tree::new();
 //!
 //! // Trees usually have a root node
-//! let fs_root = tree.root("/");
+//! let fs_root = tree.root("/")?;
 //!
 //! // Using .root() or .node() return a NodeRef object
 //! // which can be later used to identify and manipulate
 //! // node values.
 //! let usr = tree.node("usr");
-//! tree.append_child(fs_root, usr);
+//! tree.append_child(fs_root, usr)?;
 //!
 //! // Add multiple children at once
 //! let bin = tree.node("bin");
 //! let lib = tree.node("lib");
-//! tree.append_children(usr, &[bin, lib]);
+//! tree.append_children(usr, &[bin, lib])?;
 //!
-//! let etc = tree.node("etc");
-//! tree.append_child(fs_root, etc);
+//! // You can also add nodes to a parent in a single go
+//! let etc = tree.child_node(fs_root, "etc")?;
 //! ```
 //!
 //! ### Getting, changing and removing nodes
 //!
-//! ```rust
+//! ```ignore
 //! // Get node values (this is O(1))
 //! assert_eq!(tree.get(lib), Some(&"lib"));
 //! assert_eq!(tree.get(lib), Some(&"lib"));
@@ -51,21 +51,21 @@
 //!
 //! // Remove node, this won't resize the underlying Vec
 //! // because otherwise node references will be invalidated.
-//! tree.remove(etc);
+//! tree.remove(etc)?;
 //! ```
 //!
 //! ### Getting number of nodes
 //!
-//! ```rust
+//! ```ignore
 //! // .len() is also O(1)
 //! assert_eq!(tree.len(), 4);
 //! ```
 //!
 //! ### Traverse tree
 //!     
-//! ```rust
+//! ```ignore
 //! // Here are the basic hierarchical operators
-//! assert_eq!(tree.get_parent(usr), Some(fs_root));
+//! assert_eq!(tree.get_parent(usr)?, Some(fs_root));
 //! assert_eq!(
 //!     tree.get_children(usr).unwrap().collect::<Vec<NodeRef>>(),
 //!     vec![bin, lib],
@@ -73,7 +73,7 @@
 //!
 //! // Iterate depth first over a node children.
 //! // Use .depth_first() to iterate the entire tree.
-//! for node in tree.depth_first_of(usr) {
+//! for node in tree.depth_first_of(usr)? {
 //!     // ...
 //! }
 //! ```
@@ -181,7 +181,8 @@ impl<T> Tree<T> {
     /// *Arguments:*
     /// * `content` - The item to be set as content of the node.
     ///
-    /// *Returns:* A [NodeRef] object referencing the created node.
+    /// *Returns:* A result containing a [NodeRef] object
+    ///            referencing the created node.
     pub fn node(&mut self, content: T) -> NodeRef {
         let id = self.nodes.len();
 
@@ -193,6 +194,19 @@ impl<T> Tree<T> {
         self.len += 1;
 
         NodeRef { id }
+    }
+
+    /// Create a node child on another.
+    ///
+    /// *Arguments:*
+    /// * `parent_ref` - [NodeRef] of the parent node.
+    /// * `content` - The item to be set as content of the node.
+    ///
+    /// *Returns:* A [NodeRef] object referencing the created node.
+    pub fn child_node(&mut self, parent: NodeRef, content: T) -> Result<NodeRef> {
+        let child = self.node(content);
+        self.append_child(parent, child)?;
+        Ok(child)
     }
 
     /// Remove a node from the tree.

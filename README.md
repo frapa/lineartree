@@ -34,21 +34,21 @@ use lineartree::{Tree, NodeRef};
 let mut tree = Tree::new();
 
 // Trees usually have a root node
-let fs_root = tree.root("/");
+let fs_root = tree.root("/")?;
 
 // Using .root() or .node() return a NodeRef object
 // which can be later used to identify and manipulate
 // node values.
 let usr = tree.node("usr");
-tree.append_child(fs_root, usr);
+tree.append_child(fs_root, usr)?;
 
 // Add multiple children at once
 let bin = tree.node("bin");
 let lib = tree.node("lib");
-tree.append_children(usr, &[bin, lib]);
+tree.append_children(usr, &[bin, lib])?;
 
-let etc = tree.node("etc");
-tree.append_child(fs_root, etc);
+// You can also add nodes to a parent in a single go
+let etc = tree.child_node(fs_root, "etc")?;
 ```
 
 ### Getting, changing and removing nodes
@@ -61,7 +61,7 @@ assert_eq!(tree.get_mut(lib), Some(&mut "lib"));
 
 // Remove node, this won't resize the underlying Vec
 // because otherwise node references will be invalidated.
-tree.remove(etc);
+tree.remove(etc)?;
 ```
 
 ### Getting number of nodes
@@ -75,7 +75,7 @@ assert_eq!(tree.len(), 4);
     
 ```rust
 // Here are the basic hierarchical operators
-assert_eq!(tree.get_parent(usr), Some(fs_root));
+assert_eq!(tree.get_parent(usr)?, Some(fs_root));
 assert_eq!(
     tree.get_children(usr).unwrap().collect::<Vec<NodeRef>>(),
     vec![bin, lib],
@@ -83,7 +83,7 @@ assert_eq!(
 
 // Iterate depth first over a node children.
 // Use .depth_first() to iterate the entire tree.
-for node in tree.depth_first_of(usr) {
+for node in tree.depth_first_of(usr)? {
     // ...
 }
 ```
