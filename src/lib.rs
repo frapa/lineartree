@@ -456,8 +456,6 @@ impl<T> Tree<T> {
         for orig_child in self.get_children(orig_node).unwrap() {
             self.map_intern(*orig_child, tree, Some(new_node), map_fn);
         }
-
-        new_node;
     }
 }
 
