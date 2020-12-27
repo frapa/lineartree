@@ -427,7 +427,7 @@ impl<T> Tree<T> {
     }
 
     /// TODO: complete documentation
-    pub fn map<N>(&self, map_fn: impl Fn(&T, &Tree<T>, &Tree<N>) -> N) -> Result<Tree<N>> {
+    pub fn map<N>(&self, map_fn: impl Fn(&T) -> N) -> Result<Tree<N>> {
         match self.root {
             None => Err(TreeError::new("Parent node does not exist.")),
             Some(root) => {
@@ -443,7 +443,7 @@ impl<T> Tree<T> {
         orig_node: NodeRef,
         tree: &mut Tree<N>,
         new_parent: Option<NodeRef>,
-        map_fn: &impl Fn(&T, &Tree<T>, &Tree<N>) -> N,
+        map_fn: &impl Fn(&T) -> N,
     ) {
         let orig_content = self.get(orig_node).unwrap();
         let new_content = map_fn(orig_content);
