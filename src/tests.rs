@@ -55,6 +55,18 @@ fn new_node() {
 }
 
 #[test]
+fn set_root() {
+    let (mut tree, node_a, node_b) = tree2();
+
+    assert_eq!(tree.set_root(node_a, false), Ok(()));
+    assert_eq!(
+        tree.set_root(node_b, false),
+        Err(TreeError::new("Another root node already exists."))
+    );
+    assert_eq!(tree.set_root(node_b, true), Ok(()));
+}
+
+#[test]
 fn remove_node() {
     let (mut tree, node_a, node_b) = tree2();
 

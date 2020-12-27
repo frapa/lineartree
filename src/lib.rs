@@ -176,6 +176,26 @@ impl<T> Tree<T> {
         Ok(node_ref)
     }
 
+    /// Mark node as root node.
+    ///
+    /// There can be only one root node in a tree, and calling this function
+    /// when there's already a root node will result in an error, unless
+    /// `replace` is set to true.
+    /// Trees without root nodes are valid, but you won't be able to use some
+    /// functionality like iteration over all nodes in a tree.
+    ///
+    /// *Arguments:*
+    /// * `root_ref` - [NodeRef] object indicating the root node.
+    /// * `reset` - Whether to replace the current root node.
+    pub fn set_root(&mut self, root_ref: NodeRef, replace: bool) -> Result<()> {
+        if !replace && self.root.is_some() {
+            return Err(TreeError::new("Another root node already exists."));
+        }
+
+        self.root = Some(root_ref);
+        Ok(())
+    }
+
     /// Create a node.
     ///
     /// *Arguments:*
@@ -399,6 +419,8 @@ impl<T> Tree<T> {
             Some(root_ref) => self.depth_first_of(root_ref, include_root),
         }
     }
+
+    pub fn map<N>(&self, map_fn: impl Fn(T) -> N) -> Tree<N> {}
 }
 
 // Iterators
