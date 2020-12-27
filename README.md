@@ -77,7 +77,7 @@ assert_eq!(tree.len(), 4);
 // Here are the basic hierarchical operators
 assert_eq!(tree.get_parent(usr)?, Some(fs_root));
 assert_eq!(
-    tree.get_children(usr).unwrap().collect::<Vec<NodeRef>>(),
+    tree.get_children(usr)?.collect::<Vec<NodeRef>>(),
     vec![bin, lib],
 );
 
