@@ -45,6 +45,15 @@ fn nested_tree() -> (Tree<TestData>, NodeRef) {
     (tree, node_c)
 }
 
+fn next<T>(tree: &Tree<T>, iterator: &mut dyn Iterator<Item = NodeRef>) -> Option<T>
+where
+    T: Clone,
+{
+    iterator
+        .next()
+        .and_then(|node_ref| tree.get(node_ref).and_then(|value| Some(value.clone())))
+}
+
 #[test]
 fn new_node() {
     let (tree, node_a, node_b) = tree2();
@@ -190,16 +199,28 @@ fn root2() {
 fn depth_first_iterator() {
     let (tree, _) = nested_tree();
 
-    let next = |iterator: &mut dyn Iterator<Item = NodeRef>| {
-        iterator.next().and_then(|node_ref| tree.get(node_ref))
-    };
-
     let mut iterator = tree.depth_first(true).unwrap();
-    assert_eq!(next(&mut iterator), Some(&TestData { field: 1 }));
-    assert_eq!(next(&mut iterator), Some(&TestData { field: 2 }));
-    assert_eq!(next(&mut iterator), Some(&TestData { field: 4 }));
-    assert_eq!(next(&mut iterator), Some(&TestData { field: 3 }));
-    assert_eq!(next(&mut iterator), Some(&TestData { field: 5 }));
-    assert_eq!(next(&mut iterator), Some(&TestData { field: 6 }));
-    assert_eq!(next(&mut iterator), None);
+    assert_eq!(next(&tree, &mut iterator), Some(TestData { field: 1 }));
+    assert_eq!(next(&tree, &mut iterator), Some(TestData { field: 2 }));
+    assert_eq!(next(&tree, &mut iterator), Some(TestData { field: 4 }));
+    assert_eq!(next(&tree, &mut iterator), Some(TestData { field: 3 }));
+    assert_eq!(next(&tree, &mut iterator), Some(TestData { field: 5 }));
+    assert_eq!(next(&tree, &mut iterator), Some(TestData { field: 6 }));
+    assert_eq!(next(&tree, &mut iterator), None);
+}
+
+#[test]
+fn map() {
+    let (tree, _) = nested_tree();
+
+    let new_tree = tree.map(|value, _, _| value.field * 3).unwrap();
+
+    let mut iterator = new_tree.depth_first(true).unwrap();
+    assert_eq!(next(&new_tree, &mut iterator), Some(3));
+    assert_eq!(next(&new_tree, &mut iterator), Some(6));
+    assert_eq!(next(&new_tree, &mut iterator), Some(12));
+    assert_eq!(next(&new_tree, &mut iterator), Some(9));
+    assert_eq!(next(&new_tree, &mut iterator), Some(15));
+    assert_eq!(next(&new_tree, &mut iterator), Some(18));
+    assert_eq!(next(&new_tree, &mut iterator), None);
 }

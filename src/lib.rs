@@ -304,6 +304,12 @@ impl<T> Tree<T> {
             Some(node) => Some(&mut node.content),
         }
     }
+    /// Get reference to root node.
+    ///
+    /// *Returns:* Reference to the root node or `None` if no root node exists.
+    pub fn get_root_ref(&self) -> Option<NodeRef> {
+        self.root
+    }
 
     /// Add child node to a node.
     ///
@@ -420,7 +426,39 @@ impl<T> Tree<T> {
         }
     }
 
-    pub fn map<N>(&self, map_fn: impl Fn(T) -> N) -> Tree<N> {}
+    /// TODO: complete documentation
+    pub fn map<N>(&self, map_fn: impl Fn(&T, &Tree<T>, &Tree<N>) -> N) -> Result<Tree<N>> {
+        match self.root {
+            None => Err(TreeError::new("Parent node does not exist.")),
+            Some(root) => {
+                let mut tree = Tree::new();
+                self.map_intern(root, &mut tree, None, &map_fn);
+                Ok(tree)
+            }
+        }
+    }
+
+    fn map_intern<N>(
+        &self,
+        orig_node: NodeRef,
+        tree: &mut Tree<N>,
+        new_parent: Option<NodeRef>,
+        map_fn: &impl Fn(&T, &Tree<T>, &Tree<N>) -> N,
+    ) {
+        let orig_content = self.get(orig_node).unwrap();
+        let new_content = map_fn(orig_content);
+
+        let new_node = match new_parent {
+            None => tree.root(new_content).unwrap(),
+            Some(parent) => tree.child_node(parent, new_content).unwrap(),
+        };
+
+        for orig_child in self.get_children(orig_node).unwrap() {
+            self.map_intern(*orig_child, tree, Some(new_node), map_fn);
+        }
+
+        new_node;
+    }
 }
 
 // Iterators
